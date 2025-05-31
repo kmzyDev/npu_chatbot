@@ -6,8 +6,7 @@ Intel Core Ultraシリーズ搭載のPCを想定しています
 ## このレポジトリをクローンしたらやること
 1. **ライブラリのバグ対応（2025年5月現在）**  
 uv sync  
-.venv/Lib/site-packages/  
-intel_npu_acceleration_library/nn/llm.py 245行目付近
+.venv/Lib/site-packages/intel_npu_acceleration_library/nn/llm.py 245行目付近
 ```python
 # return attn_output, None, past_key_value
 return attn_output, past_key_value
