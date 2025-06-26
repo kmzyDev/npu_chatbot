@@ -5,6 +5,7 @@ from intel_npu_acceleration_library.compiler import CompilerConfig
 from transformers import AutoTokenizer, AutoModelForCausalLM, TextIteratorStreamer
 
 from npu_chatbot.front import Ui_MainWindow
+from npu_chatbot.system_prompt import PROMPT
 
 from threading import Thread
 
@@ -24,14 +25,25 @@ class SubstituteProgrammingThread(QThread):
         self.prompt = prompt
 
     def run(self):
-        inputs = tokenizer(self.prompt, return_tensors='pt')
+        PROMPT[1]['content'] = self.prompt
+        chat = tokenizer.apply_chat_template(
+            conversation=PROMPT, tokenize=False, add_generation_prompt=True
+        )
+        inputs = tokenizer([chat], return_tensors='pt')
         streamer = TextIteratorStreamer(tokenizer, skip_prompt=True)
         gen_thread = Thread(
             target=model.generate,
             kwargs={
                 **inputs,
                 'streamer': streamer,
-                'max_new_tokens': 128
+                'repetition_penalty': 1.2,
+                'no_repeat_ngram_size': 2,
+                'temperature': 0.8,
+                'top_p': 0.9,
+                'do_sample': True,
+                'max_new_tokens': 2000,
+                'pad_token_id': tokenizer.pad_token_id or tokenizer.eos_token_id,
+                'eos_token_id': tokenizer.eos_token_id
             },
             daemon=True
         )
